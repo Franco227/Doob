@@ -9,7 +9,8 @@
     ],
     "contact": {
         "homepage": "https://modrinth.com/mod/doob",
-        "sources": "https://github.com/Franco227/doob"
+        "sources": "https://github.com/Franco227/Doob",
+        "issues": "https://github.com/Franco227/Doob/issues"
     },
     "license": "GPL-3.0",
     "icon": "assets/doob/icon.png",
