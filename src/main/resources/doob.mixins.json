@@ -1,0 +1,13 @@
+{
+    "required": true,
+    "package": "com.franco227.doob.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "mixins": [
+        "CatEntityMixin",
+        "FoxEntityMixin",
+        "OcelotEntityMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

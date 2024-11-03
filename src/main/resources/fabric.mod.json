@@ -1,0 +1,35 @@
+{
+    "schemaVersion": 1,
+    "id": "doob",
+    "version": "${version}",
+    "name": "Doob",
+    "description": "A fabric mod that adds Jerboas to the game, inspired by the vtuber Dooby3D",
+    "authors": [
+        "Franco227"
+    ],
+    "contact": {
+        "homepage": "https://modrinth.com/mod/doob",
+        "sources": "https://github.com/Franco227/doob"
+    },
+    "license": "GPL-3.0",
+    "icon": "assets/doob/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "com.franco227.doob.Doob"
+        ],
+        "client": [
+            "com.franco227.doob.DoobClient"
+        ]
+    },
+    "mixins": [
+        "doob.mixins.json"
+    ],
+    "accessWidener": "doob.accessWidener",
+    "depends": {
+        "fabricloader": ">=0.16.5",
+        "minecraft": ">=1.21 <=1.21.1",
+        "java": ">=21",
+        "fabric-api": "*"
+    }
+}
