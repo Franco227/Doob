@@ -1,0 +1,11 @@
+{
+    "entity.doob.jerboa": "Jerboa",
+    "item.doob.jerboa_spawn_egg": "Jerboa Spawn Egg",
+    "item.doob.roots": "Roots",
+    "item.doob.small_leaves": "Small Leaves",
+    "subtitle.entity.doob.jerboa.ambient": "Jerboa squeaks",
+    "subtitle.entity.doob.jerboa.death": "Jerboa dies",
+    "subtitle.entity.doob.jerboa.hurt": "Jerboa hurts",
+    "subtitle.entity.doob.jerboa.jump": "Jerboa hops",
+    "tag.item.doob.jerboa_food": "Jerboa Food"
+}
