@@ -17,7 +17,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -35,6 +34,7 @@ public class JerboaEntity extends AnimalEntity {
     private int jumpAnimationProgress = 0;
     private boolean isJumping = false;
 
+    // Initialization
     public JerboaEntity(EntityType<? extends AnimalEntity> entityType, World world) {
         super(entityType, world);
         this.jumpControl = new JerboaEntity.JerboaJumpControl(this);
@@ -46,6 +46,16 @@ public class JerboaEntity extends AnimalEntity {
         return MobEntity.createMobAttributes()
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 5)
             .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3f);
+    }
+
+
+    // Tick
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.getWorld().isClient()) {
+            this.setupAnimationStates();
+        }
     }
 
     private void setupAnimationStates() {
@@ -67,48 +77,76 @@ public class JerboaEntity extends AnimalEntity {
     }
 
     @Override
-    public void tick() {
-        super.tick();
-        if (this.getWorld().isClient()) {
-            this.setupAnimationStates();
+    public void mobTick() {
+        if (this.ticksUntilJump > 0) {
+            this.ticksUntilJump--;
+        }
+
+        if (this.isOnGround()) {
+            if (!this.lastOnGround) {
+                this.setJumping(false);
+                this.scheduleJump();
+            }
+
+            JerboaEntity.JerboaJumpControl jerboaJumpControl = (JerboaEntity.JerboaJumpControl)this.jumpControl;
+            if (jerboaJumpControl.isInactive()) {
+                if (this.moveControl.isMoving() && this.ticksUntilJump == 0) {
+                    Path path = this.navigation.getCurrentPath();
+                    Vec3d vec3d = new Vec3d(this.moveControl.getTargetX(), this.moveControl.getTargetY(), this.moveControl.getTargetZ());
+                    if (path != null && !path.isFinished()) {
+                        vec3d = path.getNodePosition(this);
+                    }
+
+                    this.lookTowards(vec3d.x, vec3d.z);
+                    this.startJump();
+                }
+            } else if (!jerboaJumpControl.canJump()) {
+                this.enableJump();
+            }
+        }
+
+        this.lastOnGround = this.isOnGround();
+    }
+
+    @Override
+    public void tickMovement() {
+        super.tickMovement();
+        if (this.jumpTicks != this.jumpDuration) {
+            this.jumpTicks++;
+        } else if (this.jumpDuration != 0) {
+            this.jumpTicks = 0;
+            this.jumpDuration = 0;
+            this.setJumping(false);
         }
     }
 
-    public static boolean isValidSpawn(EntityType<? extends JerboaEntity> type, WorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
-        return world.getBlockState(pos.down()).isIn(DoobTags.JERBOA_SPAWNABLE_ON);
+
+    // Set
+    public void setSpeed(double speed) {
+        if (this.getNavigation().speed != speed) {
+            this.getNavigation().setSpeed(speed);
+            this.moveControl.moveTo(this.moveControl.getTargetX(), this.moveControl.getTargetY(), this.moveControl.getTargetZ(), speed);
+        }
     }
 
     @Override
-    public boolean isBreedingItem(ItemStack stack) {
-        return stack.isIn(DoobTags.JERBOA_FOOD);
+    public void setJumping(boolean jumping) {
+        super.setJumping(jumping);
+        if (jumping) {
+            this.playSound(this.getJumpSound(), this.getSoundVolume(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 0.8F);
+        }
     }
 
-    @Override
-    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
-        return DoobEntities.JERBOA.create(world);
+    private void enableJump() {
+        ((JerboaEntity.JerboaJumpControl)this.jumpControl).setCanJump(true);
     }
 
-
-    @Override
-    protected SoundEvent getAmbientSound() {
-        return DoobSounds.ENTITY_JERBOA_AMBIENT;
-    }
-
-    @Override
-    protected SoundEvent getDeathSound() {
-        return DoobSounds.ENTITY_JERBOA_DEATH;
-    }
-
-    @Override
-    protected SoundEvent getHurtSound(DamageSource source) {
-        return DoobSounds.ENTITY_JERBOA_HURT;
-    }
-
-    protected SoundEvent getJumpSound() {
-        return DoobSounds.ENTITY_JERBOA_JUMP;
+    private void disableJump() {
+        ((JerboaEntity.JerboaJumpControl)this.jumpControl).setCanJump(false);
     }
 
 
+    // Other
     protected boolean isJumpNeeded(final double targetY) {
         return targetY > this.getY() + 0.5;
     }
@@ -130,6 +168,17 @@ public class JerboaEntity extends AnimalEntity {
         return super.getJumpVelocity(f / 0.42F);
     }
 
+    private void lookTowards(double x, double z) {
+        this.setYaw((float)(MathHelper.atan2(z - this.getZ(), x - this.getX()) * 180.0F / (float)Math.PI) - 90.0F);
+    }
+
+    @Override
+    public boolean shouldSpawnSprintingParticles() {
+        return false;
+    }
+
+
+    // Jump
     @Override
     public void jump() {
         super.jump();
@@ -146,75 +195,10 @@ public class JerboaEntity extends AnimalEntity {
         }
     }
 
-    public void setSpeed(double speed) {
-        if (this.getNavigation().speed != speed) {
-            this.getNavigation().setSpeed(speed);
-            this.moveControl.moveTo(this.moveControl.getTargetX(), this.moveControl.getTargetY(), this.moveControl.getTargetZ(), speed);
-        }
-    }
-
-    @Override
-    public void setJumping(boolean jumping) {
-        super.setJumping(jumping);
-        if (jumping) {
-            this.playSound(this.getJumpSound(), this.getSoundVolume(), ((this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F) * 0.8F);
-        }
-    }
-
     public void startJump() {
         this.setJumping(true);
         this.jumpDuration = 10;
         this.jumpTicks = 0;
-    }
-
-
-    @Override
-    public void mobTick() {
-        if (this.ticksUntilJump > 0) {
-            this.ticksUntilJump--;
-        }
-
-        if (this.isOnGround()) {
-            if (!this.lastOnGround) {
-                this.setJumping(false);
-                this.scheduleJump();
-            }
-
-            JerboaEntity.JerboaJumpControl jerboaJumpControl = (JerboaEntity.JerboaJumpControl)this.jumpControl;
-            if (!jerboaJumpControl.isActive()) {
-                if (this.moveControl.isMoving() && this.ticksUntilJump == 0) {
-                    Path path = this.navigation.getCurrentPath();
-                    Vec3d vec3d = new Vec3d(this.moveControl.getTargetX(), this.moveControl.getTargetY(), this.moveControl.getTargetZ());
-                    if (path != null && !path.isFinished()) {
-                        vec3d = path.getNodePosition(this);
-                    }
-
-                    this.lookTowards(vec3d.x, vec3d.z);
-                    this.startJump();
-                }
-            } else if (!jerboaJumpControl.canJump()) {
-                this.enableJump();
-            }
-        }
-
-        this.lastOnGround = this.isOnGround();
-    }
-
-    @Override
-    public boolean shouldSpawnSprintingParticles() {
-        return false;
-    }
-
-    private void lookTowards(double x, double z) {
-        this.setYaw((float)(MathHelper.atan2(z - this.getZ(), x - this.getX()) * 180.0F / (float)Math.PI) - 90.0F);
-    }
-
-    private void enableJump() {
-        ((JerboaEntity.JerboaJumpControl)this.jumpControl).setCanJump(true);
-    }
-
-    private void disableJump() {
-        ((JerboaEntity.JerboaJumpControl)this.jumpControl).setCanJump(false);
     }
 
     private void doScheduleJump() {
@@ -226,19 +210,8 @@ public class JerboaEntity extends AnimalEntity {
         this.disableJump();
     }
 
-    @Override
-    public void tickMovement() {
-        super.tickMovement();
-        if (this.jumpTicks != this.jumpDuration) {
-            this.jumpTicks++;
-        } else if (this.jumpDuration != 0) {
-            this.jumpTicks = 0;
-            this.jumpDuration = 0;
-            this.setJumping(false);
-        }
-    }
 
-
+    // Controls
     public static class JerboaJumpControl extends JumpControl {
         private final JerboaEntity jerboa;
         private boolean canJump;
@@ -248,8 +221,8 @@ public class JerboaEntity extends AnimalEntity {
             this.jerboa = jerboa;
         }
 
-        public boolean isActive() {
-            return this.active;
+        public boolean isInactive() {
+            return !this.active;
         }
 
         public boolean canJump() {
@@ -269,7 +242,6 @@ public class JerboaEntity extends AnimalEntity {
         }
     }
 
-
     static class JerboaMoveControl extends MoveControl {
         private final JerboaEntity jerboa;
         private double jerboaSpeed;
@@ -281,7 +253,7 @@ public class JerboaEntity extends AnimalEntity {
 
         @Override
         public void tick() {
-            if (this.jerboa.isOnGround() && !this.jerboa.jumping && !((JerboaEntity.JerboaJumpControl)this.jerboa.jumpControl).isActive()) {
+            if (this.jerboa.isOnGround() && !this.jerboa.jumping && ((JerboaJumpControl) this.jerboa.jumpControl).isInactive()) {
                 this.jerboa.setSpeed(0.0);
             } else if (this.isMoving() || this.state == State.JUMPING) {
                 this.jerboa.setSpeed(this.jerboaSpeed);
@@ -302,6 +274,44 @@ public class JerboaEntity extends AnimalEntity {
             }
         }
     }
+
+
+    // Spawning & Breeding
+    public static boolean isValidSpawn(EntityType<? extends JerboaEntity> type, WorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
+        return world.getBlockState(pos.down()).isIn(DoobTags.JERBOA_SPAWNABLE_ON);
+    }
+
+    @Override
+    public boolean isBreedingItem(ItemStack stack) {
+        return stack.isIn(DoobTags.JERBOA_FOOD);
+    }
+
+    @Override
+    public @Nullable PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
+        return DoobEntities.JERBOA.create(world);
+    }
+
+
+    // Sounds
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return DoobSounds.ENTITY_JERBOA_AMBIENT;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return DoobSounds.ENTITY_JERBOA_DEATH;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return DoobSounds.ENTITY_JERBOA_HURT;
+    }
+
+    protected SoundEvent getJumpSound() {
+        return DoobSounds.ENTITY_JERBOA_JUMP;
+    }
+
 
     // Goals
     @Override
