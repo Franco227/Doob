@@ -1,0 +1,74 @@
+{
+    "entity.jerboa.ambient": {
+        "sounds": [
+            {
+                "name": "doob:mob/jerboa/idle1",
+                "volume": 0.25
+            },
+            {
+                "name": "doob:mob/jerboa/idle2",
+                "volume": 0.25
+            },
+            {
+                "name": "doob:mob/jerboa/idle3",
+                "volume": 0.25
+            },
+            {
+                "name": "doob:mob/jerboa/idle4",
+                "volume": 0.25
+            }
+        ],
+        "subtitle": "subtitle.entity.doob.jerboa.ambient"
+    },
+    "entity.jerboa.death": {
+        "sounds": [
+            {
+                "name": "doob:mob/jerboa/death",
+                "volume": 0.5
+            }
+        ],
+        "subtitle": "subtitle.entity.doob.jerboa.death"
+    },
+    "entity.jerboa.hurt": {
+        "sounds": [
+            {
+                "name": "doob:mob/jerboa/hurt1",
+                "volume": 0.5
+            },
+            {
+                "name": "doob:mob/jerboa/hurt2",
+                "volume": 0.5
+            },
+            {
+                "name": "doob:mob/jerboa/hurt3",
+                "volume": 0.5
+            },
+            {
+                "name": "doob:mob/jerboa/hurt4",
+                "volume": 0.5
+            }
+        ],
+        "subtitle": "subtitle.entity.doob.jerboa.hurt"
+    },
+    "entity.jerboa.jump": {
+        "sounds": [
+            {
+                "name": "doob:mob/jerboa/hop1",
+                "volume": 0.1
+            },
+            {
+                "name": "doob:mob/jerboa/hop2",
+                "volume": 0.1
+            },
+            {
+                "name": "doob:mob/jerboa/hop3",
+                "volume": 0.1
+            },
+            {
+                "name": "doob:mob/jerboa/hop4",
+                "volume": 0.1
+            }
+        ],
+        "subtitle": "subtitle.entity.doob.jerboa.jump"
+    }
+}
