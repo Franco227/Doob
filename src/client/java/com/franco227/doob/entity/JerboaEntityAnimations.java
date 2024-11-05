@@ -15,7 +15,7 @@ public class JerboaEntityAnimations {
 		.addBoneAnimation("Body", new Transformation(Transformation.Targets.TRANSLATE,
 			new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
 			new Keyframe(0.125F, AnimationHelper.createTranslationalVector(0.0F, -0.5F, 0.0F), Transformation.Interpolations.LINEAR),
-			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 5.5F, 0.0F), Transformation.Interpolations.LINEAR),
+			new Keyframe(0.5F, AnimationHelper.createTranslationalVector(0.0F, 1.5F, 0.0F), Transformation.Interpolations.LINEAR),
 			new Keyframe(1.0F, AnimationHelper.createTranslationalVector(0.0F, -0.5F, 0.0F), Transformation.Interpolations.LINEAR)
 		))
 		.addBoneAnimation("Body", new Transformation(Transformation.Targets.SCALE,
