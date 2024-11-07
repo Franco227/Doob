@@ -1,4 +1,6 @@
 # Changelog
+## Doob 1.1.2
+- Added Jerboa icon for Xaero's Minimap compatibility
 ## Doob 1.1.1
 - Fixed jump animation height
 ## Doob 1.1.0
